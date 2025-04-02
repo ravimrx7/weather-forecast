@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: url('https://source.unsplash.com/1600x900/?sky,clouds') no-repeat center center/cover;
+            color: white;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            width: 80%;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            background: #ff9800;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #e68900;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+        }
+        .tab {
+            background: gray;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .active {
+            background: orange;
+        }
+        .section {
+            display: none;
+        }
+        .show {
+            display: block;
+        }
+        .weather-icon {
+            width: 50px;
+            height: 50px;
+        }
+        .forecast-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        .forecast-table th, .forecast-table td {
+            border: 1px solid white;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Weather Forecast</h1>
+        <input type="text" id="city" placeholder="Enter city name">
+        <button onclick="getWeather()">Search</button>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="showSection('today')">Today</div>
+            <div class="tab" onclick="showSection('hourly')">Hourly</div>
+            <div class="tab" onclick="showSection('daily')">Daily</div>
+        </div>
+
+        <div id="today" class="section show">
+            <h2>Today's Weather</h2>
+            <div id="weather"></div>
+        </div>
+
+        <div id="hourly" class="section">
+            <h2>Hourly Forecast</h2>
+            <table class="forecast-table" id="hourlyForecast"></table>
+        </div>
+
+        <div id="daily" class="section">
+            <h2>Daily Forecast</h2>
+            <table class="forecast-table" id="dailyForecast"></table>
+        </div>
+    </div>
+
+    <script>
+        const iconMap = {
+            "01d": "https://img.icons8.com/color/100/000000/sun.png",
+            "01n": "https://img.icons8.com/color/100/000000/full-moon.png",
+            "02d": "https://img.icons8.com/color/100/000000/partly-cloudy-day.png",
+            "02n": "https://img.icons8.com/color/100/000000/partly-cloudy-night.png",
+            "03d": "https://img.icons8.com/color/100/000000/cloud.png",
+            "03n": "https://img.icons8.com/color/100/000000/cloud.png",
+            "04d": "https://img.icons8.com/color/100/000000/clouds.png",
+            "04n": "https://img.icons8.com/color/100/000000/clouds.png",
+            "09d": "https://img.icons8.com/color/100/000000/rain.png",
+            "09n": "https://img.icons8.com/color/100/000000/rain.png",
+            "10d": "https://img.icons8.com/color/100/000000/rain-cloud.png",
+            "10n": "https://img.icons8.com/color/100/000000/rain-cloud.png",
+            "11d": "https://img.icons8.com/color/100/000000/storm.png",
+            "11n": "https://img.icons8.com/color/100/000000/storm.png",
+            "13d": "https://img.icons8.com/color/100/000000/snow.png",
+            "13n": "https://img.icons8.com/color/100/000000/snow.png",
+            "50d": "https://img.icons8.com/color/100/000000/fog-day.png",
+            "50n": "https://img.icons8.com/color/100/000000/fog-night.png"
+        };
+
+        function showSection(section) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('show'));
+            document.getElementById(section).classList.add('show');
+            
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`.tab[onclick="showSection('${section}')"]`).classList.add('active');
+        }
+
+        async function getWeather() {
+            const city = document.getElementById('city').value;
+            const apiKey = 'ff55df3948f550d5da6abdcadefc0a61';
+            
+            try {
+                const weatherResponse = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
+                const forecastResponse = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`);
+                
+                const weatherData = await weatherResponse.json();
+                const forecastData = await forecastResponse.json();
+
+                if (weatherData.cod === 200) {
+                    document.getElementById('weather').innerHTML = `
+                        <p><strong>${weatherData.name}</strong></p>
+                        <img class="weather-icon" src="${iconMap[weatherData.weather[0].icon]}" alt="Weather icon">
+                        <p>Temperature: ${weatherData.main.temp}°C</p>
+                        <p>Weather: ${weatherData.weather[0].description}</p>
+                    `;
+                }
+
+                if (forecastData.cod === "200") {
+                    let hourlyHTML = "<tr><th>Time</th><th>Temp</th><th>Weather</th></tr>";
+                    let dailyHTML = "<tr><th>Date</th><th>Temp</th><th>Weather</th></tr>";
+
+                    forecastData.list.forEach((item, index) => {
+                        let dateTime = new Date(item.dt * 1000);
+                        let time = dateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        let date = dateTime.toDateString();
+                        let temp = `${item.main.temp}°C`;
+                        let icon = iconMap[item.weather[0].icon];
+
+                        if (index < 8) {
+                            hourlyHTML += `<tr><td>${time}</td><td>${temp}</td><td><img class="weather-icon" src="${icon}" alt=""></td></tr>`;
+                        }
+                        if (index % 8 === 0) {
+                            dailyHTML += `<tr><td>${date}</td><td>${temp}</td><td><img class="weather-icon" src="${icon}" alt=""></td></tr>`;
+                        }
+                    });
+
+                    document.getElementById('hourlyForecast').innerHTML = hourlyHTML;
+                    document.getElementById('dailyForecast').innerHTML = dailyHTML;
+                }
+
+            } catch (error) {
+                alert("Error fetching data");
+            }
+        }
+    </script>
+</body>
+</html>
