@@ -109,8 +109,8 @@
             "04n": "https://img.icons8.com/color/100/000000/clouds.png",
             "09d": "https://img.icons8.com/color/100/000000/rain.png",
             "09n": "https://img.icons8.com/color/100/000000/rain.png",
-            "10d": "https://img.icons8.com/color/100/000000/rain-cloud.png",
-            "10n": "https://img.icons8.com/color/100/000000/rain-cloud.png",
+            "10d": "https://img.icons8.com/fluency/48/rain.png",
+            "10n": "https://img.icons8.com/fluency/48/rain.png",
             "11d": "https://img.icons8.com/color/100/000000/storm.png",
             "11n": "https://img.icons8.com/color/100/000000/storm.png",
             "13d": "https://img.icons8.com/color/100/000000/snow.png",
@@ -129,7 +129,7 @@
 
         async function getWeather() {
             const city = document.getElementById('city').value;
-            const apiKey = '237b65e94b122c8cef58fd83daf1c743';
+            const apiKey = '1c69327a9a6ce313ed9d545116ba75a9';
             
             try {
                 const weatherResponse = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
